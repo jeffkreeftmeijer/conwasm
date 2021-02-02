@@ -42,7 +42,7 @@ const drawGrid = () => {
   ctx.stroke()
 }
 
-const getIndex = (row, column) => {
+const getIndex = (row: number, column: number) => {
   return row * width + column;
 }
 
