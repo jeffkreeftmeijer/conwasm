@@ -1,4 +1,4 @@
-import { memory } from "wasm-game-of-life/wasm_game_of_life_bg";
+import { memory } from "wasm-game-of-life/wasm_game_of_life_bg.wasm";
 import { Universe, Cell } from "wasm-game-of-life";
 
 const CELL_SIZE = 5;
@@ -10,7 +10,7 @@ const universe = Universe.new();
 const width = universe.width();
 const height = universe.height();
 
-const canvas = document.getElementById("game-of-life-canvas");
+const canvas = document.getElementById("game-of-life-canvas") as HTMLCanvasElement;
 canvas.height = (CELL_SIZE + 1) * height + 1;
 canvas.width = (CELL_SIZE + 1) * width + 1;
 
