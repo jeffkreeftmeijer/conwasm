@@ -1,45 +1,34 @@
 import {memory} from "wasm-game-of-life/wasm_game_of_life_bg.wasm";
 import {Universe, Cell} from "wasm-game-of-life";
+import * as THREE from "three";
 
 const CELL_SIZE = 5;
-const GRID_COLOR = "#ccc";
-const DEAD_COLOR = "#fff";
-const ALIVE_COLOR = "#000";
-
 const universe = Universe.new();
 const width = universe.width();
 const height = universe.height();
 
 const canvas = document.getElementById("game-of-life-canvas") as HTMLCanvasElement;
-canvas.height = (CELL_SIZE + 1) * height + 1;
-canvas.width = (CELL_SIZE + 1) * width + 1;
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(
+  width * CELL_SIZE / - 2,
+  width * CELL_SIZE / 2,
+  height * CELL_SIZE / 2,
+  height * CELL_SIZE / - 2,
+  -100,
+  1000
+);
 
-const ctx = canvas.getContext('2d');
+const renderer = new THREE.WebGLRenderer({canvas: canvas});
+
+renderer.setSize(width * CELL_SIZE, height * CELL_SIZE);
 
 const renderLoop = () => {
   universe.tick();
 
-  drawGrid();
   drawCells();
 
+  renderer.render(scene, camera);
   requestAnimationFrame(renderLoop);
-}
-
-const drawGrid = () => {
-  ctx.beginPath();
-  ctx.strokeStyle = GRID_COLOR;
-
-  for (let i = 0; i <= width; i++) {
-    ctx.moveTo(i * (CELL_SIZE + 1) + 1, 0);
-    ctx.lineTo(i * (CELL_SIZE + 1) + 1, (CELL_SIZE + 1) * height + 1);
-  }
-
-  for (let j = 0; j <= height; j++) {
-    ctx.moveTo(0, j * (CELL_SIZE + 1) + 1);
-    ctx.lineTo((CELL_SIZE + 1) * width + 1, j * (CELL_SIZE + 1) + 1);
-  }
-
-  ctx.stroke()
 }
 
 const getIndex = (row: number, column: number) => {
@@ -47,31 +36,25 @@ const getIndex = (row: number, column: number) => {
 }
 
 const drawCells = () => {
+  scene.remove.apply(scene, scene.children);
   const cellsPtr = universe.cells();
   const cells = new Uint8Array(memory.buffer, cellsPtr, width * height);
-
-  ctx.beginPath();
+  const material = new THREE.MeshBasicMaterial({color: 0xffffff});
+  const geometry = new THREE.BoxGeometry(CELL_SIZE, CELL_SIZE, 0);
 
   for (let row = 0; row < height; row++) {
     for (let col = 0; col < width; col++) {
       const idx = getIndex(row, col);
 
-      ctx.fillStyle = cells[idx] === Cell.Dead
-        ? DEAD_COLOR
-        : ALIVE_COLOR;
-
-      ctx.fillRect(
-        col * (CELL_SIZE + 1) + 1,
-        row * (CELL_SIZE + 1) + 1,
-        CELL_SIZE,
-        CELL_SIZE
-      );
+      if (cells[idx] == Cell.Alive) {
+        const cube = new THREE.Mesh(geometry, material);
+        cube.position.x = (width * CELL_SIZE / - 2) + (col * CELL_SIZE);
+        cube.position.y = (height * CELL_SIZE / - 2) + (row * CELL_SIZE);
+        scene.add(cube);
+      }
     }
   }
-
-  ctx.stroke();
 }
 
-drawGrid();
 drawCells();
 requestAnimationFrame(renderLoop);
