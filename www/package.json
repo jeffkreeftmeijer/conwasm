@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/rustwasm/create-wasm-app#readme",
   "dependencies": {
+    "three": "^0.125.2",
     "wasm-game-of-life": "file:../pkg"
   },
   "devDependencies": {
